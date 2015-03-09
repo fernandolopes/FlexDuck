@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600">
+	
+	<fx:Binding source="nome.text" destination="contato.nome" twoWay="true" />
+	<fx:Binding source="email.text" destination="contato.email" twoWay="true" />
+			
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:RemoteObject id="remoteObject" destination="ContatoService" fault="onFault(event);">
+			<s:method name="addContato" result="onResultAddContatoHandler(event);" fault="onFault(event);" />
+			<s:method name="getListContato" result="onResultGetListContatoHandler(event);" fault="onFault(event);" />
+		</s:RemoteObject>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import br.com.fernandolopez.model.Contato;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			[Bindable]
+			public var contato : Contato = new Contato();
+			
+			[Bindable]
+			public var listContato : ArrayCollection = new ArrayCollection();
+			
+			
+			/**
+			 * Metodo para falhas na comunicação
+			 */				
+			protected function onFault(event:FaultEvent) : void
+			{
+				Alert.show('Erro');
+			}
+			
+			/**
+			 * Funcao para retorno de cadastro do Contato
+			 */
+			protected function onResultAddContatoHandler(event:ResultEvent) : void 
+			{
+				Alert.show('Adicionado');
+			}
+			
+			/**
+			 * Funcao para retorno da lista de contatos
+			 */
+			protected function onResultGetListContatoHandler(event:ResultEvent) : void
+			{
+				this.listContato = event.result as ArrayCollection;
+			}
+			
+			/**
+			 * Evento de click do botão de cadastro
+			 */
+			protected function btnCadastroClickHandler(event:MouseEvent):void
+			{
+				this.remoteObject.addContato(this.contato);
+			}
+			
+			/**
+			 * Evento de click do botão de pesquisa
+			 */
+			protected function btnListarClickHandler(event:MouseEvent):void
+			{
+				this.remoteObject.getListContato();
+			}
+		]]>
+	</fx:Script>
+	
+	<s:Panel width="400" height="137" title="Cadastro" left="10" top="10">
+		<s:Button x="55" label="Cadastrar" bottom="10" id="btnCadastro" click="btnCadastroClickHandler(event);" />
+			<s:Label x="10" y="16" text="Nome:" />
+			<s:Label x="13" y="50" text="Email:" />
+			<s:TextInput x="56" y="10" width="332" id="nome" />	
+			<s:TextInput x="56" y="44" width="332" id="email" />
+	</s:Panel>
+	<s:Panel x="12" y="166" width="400" height="227" title="Pesquisa" left="10">
+		<mx:DataGrid x="10" y="10" bottom="30" left="5" right="5" top="5" id="grid" dataProvider="{this.listContato}">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Nome" dataField="nome" />
+				<mx:DataGridColumn headerText="Email" dataField="email" />
+			</mx:columns>
+		</mx:DataGrid>
+		<s:Button x="1" y="163" label="Listar Todos" left="5" bottom="5" click="btnListarClickHandler(event);" />
+	</s:Panel>
+</s:Application>
